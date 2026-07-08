@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>三个相等正方形的角度推理</title>
+  <style>
+    :root {
+      --ink: #17304a;
+      --muted: #6f8192;
+      --paper: #f8fbff;
+      --panel: #ffffff;
+      --line: #1d7abb;
+      --accent: #e24b3f;
+      --gold: #d78520;
+      --border: #d8e5f0;
+      --soft-blue: #f3f9fe;
+      --shadow: 0 14px 34px rgba(38, 85, 124, .10);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 13% 9%, rgba(96, 168, 220, .11), transparent 26rem),
+        radial-gradient(circle at 90% 88%, rgba(247, 191, 93, .12), transparent 28rem),
+        var(--paper);
+      font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+    }
+
+    button, .question-link, .pool-card, .drop-slot { -webkit-tap-highlight-color: transparent; }
+
+    .page {
+      width: min(1180px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 30px 0 54px;
+    }
+
+    .title-card,
+    .figure-card,
+    .pool-card-panel,
+    .equation-section {
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, .94);
+      box-shadow: var(--shadow);
+    }
+
+    .title-card {
+      position: relative;
+      min-height: 110px;
+      padding: 20px 26px;
+      border-radius: 22px;
+    }
+
+    .title-reset-button {
+      position: absolute;
+      top: 18px;
+      right: 22px;
+      min-width: 72px;
+      min-height: 32px;
+      padding: 0 12px;
+      border: 1px solid #c7dce9;
+      border-radius: 10px;
+      color: #527089;
+      background: #f7fbfe;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease, color .18s ease;
+    }
+
+    .title-reset-button:hover,
+    .title-reset-button:focus-visible {
+      border-color: #7eafcf;
+      color: #1f6f9f;
+      background: #edf7fd;
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .10em;
+    }
+
+    .question {
+      min-height: 43px;
+      margin: 0;
+      font-family: "STKaiti", "KaiTi", "Microsoft YaHei", serif;
+      font-size: clamp(22px, 2.2vw, 32px);
+      line-height: 1.48;
+      font-weight: 700;
+      letter-spacing: .01em;
+    }
+
+    .typed-segment { white-space: pre-wrap; }
+
+    .question-link {
+      display: inline-block;
+      min-width: 1em;
+      padding: 0 2px;
+      border-radius: 5px;
+      color: var(--accent);
+      cursor: default;
+      text-decoration: none;
+      transition: color .18s ease, transform .18s ease, background .18s ease;
+    }
+
+    .question-link.is-ready { cursor: pointer; }
+
+    .question-link.is-ready:hover,
+    .question-link.is-ready:focus-visible {
+      color: #bd362d;
+      background: rgba(255, 236, 233, .7);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .question-link.is-used {
+      color: #b13830;
+      background: rgba(255, 236, 233, .38);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.14fr) minmax(355px, .86fr);
+      align-items: stretch;
+      gap: 26px;
+      margin-top: 24px;
+    }
+
+    .figure-card,
+    .pool-card-panel {
+      border-radius: 22px;
+    }
+
+    .figure-card {
+      min-height: 516px;
+      padding: 21px;
+      overflow: hidden;
+    }
+
+    .figure-heading,
+    .pool-heading,
+    .equation-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .figure-heading {
+      margin: 0 4px 5px;
+    }
+
+    .figure-heading-side {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 7px;
+    }
+
+    .figure-heading h2,
+    .pool-heading h2,
+    .equation-heading h2 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    .figure-tip,
+    .pool-tip {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .figure-hint-button {
+      min-width: 84px;
+      min-height: 30px;
+      padding: 0 12px;
+      border: 1px solid #c7dce9;
+      border-radius: 10px;
+      color: #527089;
+      background: #f7fbfe;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease, color .18s ease;
+    }
+
+    .figure-hint-button:hover,
+    .figure-hint-button:focus-visible {
+      border-color: #7eafcf;
+      color: #1f6f9f;
+      background: #edf7fd;
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .figure-hint-message {
+      display: none;
+      max-width: 240px;
+      margin: 0;
+      color: #617789;
+      font-size: 13px;
+      line-height: 1.45;
+      text-align: right;
+    }
+
+    .figure-hint-message.is-visible {
+      display: block;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 474px;
+      overflow: visible;
+    }
+
+    .square {
+      fill: none;
+      stroke: var(--line);
+      stroke-width: 4;
+      stroke-linejoin: round;
+    }
+
+    .angle-arc {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 3.5;
+      stroke-linecap: round;
+    }
+
+    .angle-label {
+      fill: var(--accent);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 39px;
+      font-weight: 700;
+      paint-order: stroke;
+      stroke: rgba(255,255,255,.85);
+      stroke-width: 6px;
+      stroke-linejoin: round;
+    }
+
+    .helper {
+      opacity: 0;
+      transform-origin: 560px 450px;
+      transition: opacity .36s ease, transform .36s ease;
+    }
+
+    .helper.is-visible {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .helper:not(.is-visible) { transform: scale(.88); }
+
+    .helper-arc {
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 6 6;
+    }
+
+    .helper-label {
+      fill: var(--gold);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 28px;
+      font-weight: 700;
+      paint-order: stroke;
+      stroke: white;
+      stroke-width: 5px;
+    }
+
+    .right-angle-markers {
+      opacity: 0;
+      transition: opacity .36s ease;
+    }
+
+    .right-angle-markers.is-visible {
+      opacity: 1;
+    }
+
+    .right-angle-marker {
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .pool-card-panel {
+      min-height: 516px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pool-heading {
+      margin: 0 0 13px;
+      align-items: flex-start;
+    }
+
+    .pool-tip {
+      max-width: 180px;
+      line-height: 1.45;
+      text-align: right;
+    }
+
+    .card-pool {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 14px;
+      min-height: 318px;
+      padding: 14px;
+      border: 1px solid #dce8f1;
+      border-radius: 18px;
+      background: #fbfdff;
+    }
+
+    .pool-column {
+      min-width: 0;
+    }
+
+    .pool-column + .pool-column {
+      padding-left: 14px;
+      border-left: 1px dashed #cfdeea;
+    }
+
+    .column-title {
+      margin: 0 0 10px;
+      color: #4f687f;
+      font-size: 14px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .pool-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .angle-slot {
+      display: grid;
+      place-items: center;
+      min-height: 62px;
+      border: 1px dashed #d2e0ea;
+      border-radius: 13px;
+      background: #f8fbfe;
+      overflow: hidden;
+    }
+
+    .angle-slot .pool-card:not(.is-revealed) { display: none; }
+
+    .angle-slot:has(.pool-card.is-revealed) {
+      border-style: solid;
+      border-color: #d5e4ee;
+      background: #fff;
+    }
+
+    .angle-slot .pool-card:not(.is-revealed) + .empty-card-note { display: block; }
+    .angle-slot:has(.pool-card.is-revealed) .empty-card-note { display: none; }
+
+    .empty-card-note {
+      color: #9aaebb;
+      font-size: 12px;
+      user-select: none;
+    }
+
+    .pool-card {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      min-height: 60px;
+      margin: 0;
+      border: 1px solid #b9d5e8;
+      border-radius: 12px;
+      color: #1a6fa7;
+      background: linear-gradient(145deg, #fafdff, #edf7ff);
+      cursor: grab;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 25px;
+      font-weight: 700;
+      transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease, background .16s ease;
+      user-select: none;
+    }
+
+    .pool-card:hover,
+    .pool-card:focus-visible,
+    .pool-card.is-selected {
+      border-color: var(--line);
+      background: #fff;
+      box-shadow: 0 6px 14px rgba(31, 122, 187, .14);
+      transform: translateY(-2px);
+      outline: none;
+    }
+
+    .pool-card:active { cursor: grabbing; }
+
+    .degree-card {
+      color: #976018;
+      border-color: #ead1a5;
+      background: linear-gradient(145deg, #fffdf8, #fff5e3);
+      font-family: "Microsoft YaHei", sans-serif;
+      font-size: 21px;
+    }
+
+    .degree-card:hover,
+    .degree-card:focus-visible,
+    .degree-card.is-selected {
+      border-color: #d79a3c;
+      background: #fff;
+      box-shadow: 0 6px 14px rgba(215, 133, 32, .14);
+    }
+
+
+    .pool-instruction {
+      margin: auto 0 0;
+      padding: 12px 13px;
+      border: 1px dashed #bfd0df;
+      border-radius: 13px;
+      color: #627789;
+      background: #f8fbfe;
+      font-size: 13px;
+      line-height: 1.55;
+      text-align: center;
+    }
+
+    .equation-section {
+      margin-top: 26px;
+      padding: 23px 28px 27px;
+      border-radius: 22px;
+    }
+
+    .equation-heading {
+      margin-bottom: 14px;
+      align-items: flex-start;
+    }
+
+    .equation-heading p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      text-align: right;
+    }
+
+    .equation-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      min-height: 78px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+      font-weight: 700;
+    }
+
+    .equation-block + .equation-block {
+      margin-top: 15px;
+      padding-top: 17px;
+      border-top: 1px dashed #d6e4ee;
+    }
+
+    .row-action {
+      display: flex;
+      justify-content: center;
+      margin-top: 3px;
+    }
+
+    .drop-slot {
+      display: grid;
+      place-items: center;
+      position: relative;
+      flex: 0 0 112px;
+      width: 112px;
+      height: 64px;
+      border: 2px dashed #b9d0e4;
+      border-radius: 15px;
+      color: #91a7b9;
+      background: #fafdff;
+      cursor: pointer;
+      transition: border-color .18s ease, background .18s ease, transform .18s ease, box-shadow .18s ease;
+      user-select: none;
+    }
+
+    .drop-slot.small { flex-basis: 132px; width: 132px; }
+    .drop-slot.degree-target { border-color: #e6c78e; background: #fffdf8; }
+    .drop-slot.degree-target.has-angle-card { border-color: #b9d0e4; background: #fafdff; }
+
+    .drop-slot.is-dragover,
+    .drop-slot:hover {
+      border-color: var(--line);
+      background: #f1f9ff;
+      transform: translateY(-1px);
+      box-shadow: 0 5px 12px rgba(31, 122, 187, .10);
+    }
+
+    .drop-slot.degree-target.is-dragover,
+    .drop-slot.degree-target:hover {
+      border-color: #d79a3c;
+      background: #fff8ec;
+    }
+
+    .drop-slot.degree-target.has-angle-card:hover {
+      border-color: var(--line);
+      background: #f1f9ff;
+    }
+
+    .drop-slot.has-card {
+      border-style: solid;
+      color: var(--ink);
+    }
+
+    .placed-token {
+      display: grid;
+      place-items: center;
+      width: calc(100% - 10px);
+      height: calc(100% - 10px);
+      border-radius: 10px;
+      color: #1a6fa7;
+      background: #ecf7ff;
+      font-size: 24px;
+    }
+
+    .placed-token.degree {
+      color: #976018;
+      background: #fff3df;
+      font-family: "Microsoft YaHei", sans-serif;
+      font-size: 20px;
+    }
+
+    .drop-hint {
+      font-family: "Microsoft YaHei", sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .operator {
+      color: #71879b;
+      font-family: "Microsoft YaHei", sans-serif;
+      font-size: 34px;
+      font-weight: 400;
+    }
+
+    .action-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .row-verify-button {
+      min-width: 116px;
+      min-height: 38px;
+      padding: 0 16px;
+      font-size: 14px;
+    }
+
+    .action-button {
+      min-width: 132px;
+      min-height: 42px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 12px;
+      color: #fff;
+      background: var(--line);
+      box-shadow: 0 7px 14px rgba(31, 122, 187, .20);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 800;
+      transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+
+    .action-button:hover,
+    .action-button:focus-visible {
+      background: #176da6;
+      transform: translateY(-1px);
+      box-shadow: 0 9px 16px rgba(31, 122, 187, .24);
+      outline: none;
+    }
+
+    .secondary-button {
+      min-width: 96px;
+      color: #526b80;
+      background: #edf4f9;
+      box-shadow: none;
+    }
+
+    .secondary-button:hover,
+    .secondary-button:focus-visible {
+      color: #40596d;
+      background: #e4eef5;
+      box-shadow: none;
+    }
+
+    .validation-note {
+      min-height: 24px;
+      margin: 11px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .validation-note.success { color: #27764f; }
+    .validation-note.error { color: #b84a42; }
+
+    .condition-box {
+      min-height: 102px;
+      margin-top: 18px;
+      padding: 15px 17px;
+      border: 1px solid #d9e6ef;
+      border-radius: 16px;
+      background: var(--soft-blue);
+    }
+
+    .condition-title {
+      margin: 0 0 11px;
+      color: #3c5e79;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .condition-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      min-height: 32px;
+      align-items: center;
+    }
+
+    .condition-empty {
+      color: #8195a6;
+      font-size: 14px;
+    }
+
+    .condition-chip {
+      padding: 7px 11px;
+      border: 1px solid #c5d9e8;
+      border-radius: 999px;
+      color: #225f8e;
+      background: #fff;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 17px;
+      font-weight: 700;
+      animation: pop .25s ease-out;
+    }
+
+    .deduction-box {
+      min-height: 76px;
+      margin-top: 13px;
+      padding: 13px 16px;
+      border: 1px solid #f0d59f;
+      border-radius: 16px;
+      background: #fffaf0;
+    }
+
+    .deduction-title {
+      margin: 0 0 9px;
+      color: #805b22;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .deduction-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      min-height: 28px;
+      align-items: center;
+    }
+
+    .deduction-empty {
+      color: #9b865f;
+      font-size: 14px;
+    }
+
+    .deduction-chip {
+      padding: 7px 11px;
+      border: 1px solid #ead09b;
+      border-radius: 999px;
+      color: #805b22;
+      background: #fff;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 17px;
+      font-weight: 700;
+      animation: pop .25s ease-out;
+    }
+
+    .solution-success {
+      display: none;
+      margin: 15px 0 0;
+      padding: 13px 16px;
+      border: 1px solid #9ed6b2;
+      border-radius: 14px;
+      color: #246f49;
+      background: #f2fff7;
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.45;
+      text-align: center;
+      animation: pop .28s ease-out;
+    }
+
+    .solution-success.is-visible { display: block; }
+
+    @keyframes pop {
+      from { opacity: 0; transform: translateY(5px) scale(.94); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @media (max-width: 860px) {
+      .page { width: min(100% - 28px, 690px); padding-top: 18px; }
+      .title-card { min-height: 126px; padding: 18px 20px; border-radius: 19px; }
+      .title-reset-button { top: 15px; right: 16px; }
+      .question { font-size: clamp(20px, 5.3vw, 30px); padding-right: 78px; }
+      .workspace { grid-template-columns: 1fr; gap: 18px; }
+      .figure-card, .pool-card-panel, .equation-section { border-radius: 19px; }
+      .figure-card { min-height: 0; padding: 16px 10px; }
+      .pool-card-panel { min-height: 0; }
+      .equation-section { padding: 20px 14px 23px; }
+      .equation-row { gap: 7px; font-size: 25px; }
+      .drop-slot { flex-basis: 74px; width: 74px; height: 58px; }
+      .drop-slot.small { flex-basis: 118px; width: 118px; }
+      .operator { font-size: 28px; }
+      .placed-token { font-size: 21px; }
+    }
+
+    @media (max-width: 470px) {
+      .figure-heading, .pool-heading, .equation-heading { flex-direction: column; gap: 4px; }
+      .figure-heading-side { width: 100%; align-items: flex-start; }
+      .figure-hint-message { max-width: none; text-align: left; }
+      .title-reset-button { top: 13px; right: 12px; min-width: 64px; min-height: 30px; padding: 0 10px; font-size: 12px; }
+      .question { padding-right: 66px; }
+      .pool-tip, .equation-heading p { max-width: none; text-align: left; }
+      .card-pool { gap: 10px; padding: 10px; }
+      .pool-column + .pool-column { padding-left: 10px; }
+      .equation-row { gap: 4px; }
+      .drop-slot { flex-basis: 64px; width: 64px; height: 56px; }
+      .drop-slot.small { flex-basis: 103px; width: 103px; }
+      .operator { font-size: 24px; }
+      .placed-token { font-size: 19px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="title-card" aria-label="题目">
+      <button id="reset-button" class="title-reset-button" type="button" aria-label="重置本题">重置</button>
+      <p class="eyebrow">角度推理 · 正方形</p>
+      <p id="question" class="question" aria-live="polite"></p>
+    </section>
+
+    <section class="workspace" aria-label="图形和卡片池">
+      <article class="figure-card">
+        <div class="figure-heading">
+          <h2>图形观察</h2>
+          <div class="figure-heading-side">
+            <span class="figure-tip">蓝色线段表示三个大小相等的正方形</span>
+            <button id="figure-hint-button" class="figure-hint-button" type="button">提示</button>
+            <p id="figure-hint-message" class="figure-hint-message">仔细观察三个直角的组成，发现隐藏关系</p>
+          </div>
+        </div>
+        <svg viewBox="250 64 680 448" role="img" aria-label="三个大小相等的正方形与角1、角2、角3">
+          <path class="square" d="M330 450 L330 220 L560 220 L560 450 Z" />
+          <path class="square" d="M560 450 L408 298 L560 146 L712 298 Z" />
+          <path class="square" d="M560 450 L795 387 L732 152 L497 215 Z" />
+
+          <path class="angle-arc" d="M516 450 A44 44 0 0 1 528.9 418.9" />
+          <text class="angle-label" x="477" y="439">3</text>
+
+          <path class="angle-arc" d="M560 405 A45 45 0 0 0 548.35 406.54" />
+          <text class="angle-label" x="533" y="357">1</text>
+
+          <path class="angle-arc" d="M591.1 418.9 A44 44 0 0 1 602.5 438.6" />
+          <text class="angle-label" x="649" y="422">2</text>
+
+          <g id="helper-angles" class="helper" aria-hidden="true">
+            <path class="helper-arc" d="M528.9 418.9 A44 44 0 0 1 548.35 406.54" />
+            <text class="helper-label" x="513" y="394">4</text>
+            <path class="helper-arc" d="M560 399 A51 51 0 0 1 596.1 413.9" />
+            <text class="helper-label" x="592" y="385">5</text>
+          </g>
+
+          <g id="right-angle-markers" class="right-angle-markers" aria-hidden="true">
+            <!-- 左侧正方形：由 ∠3、∠4、∠1 组成的直角 -->
+            <path class="right-angle-marker" d="M530 450 L530 420 L560 420" />
+            <!-- 中间旋转正方形：由 ∠4、∠1、∠5 组成的直角 -->
+            <path class="right-angle-marker" d="M539 429 L560 408 L581 429" />
+            <!-- 右侧旋转正方形：由 ∠1、∠5、∠2 组成的直角 -->
+            <path class="right-angle-marker" d="M552 422 L581 415 L588 443" />
+          </g>
+        </svg>
+      </article>
+
+      <aside class="pool-card-panel" aria-label="卡片池">
+        <div class="pool-heading">
+          <h2>卡片池</h2>
+          <p class="pool-tip">点击题目中的红色角标，获得对应角卡。</p>
+        </div>
+
+        <div class="card-pool">
+          <section class="pool-column" aria-label="角卡">
+            <h3 class="column-title">角卡</h3>
+            <div class="pool-grid">
+              <div class="angle-slot"><button id="angle-card-1" class="pool-card" draggable="true" data-token="∠1" data-type="angle">∠1</button><span class="empty-card-note">待发现</span></div>
+              <div class="angle-slot"><button id="angle-card-2" class="pool-card" draggable="true" data-token="∠2" data-type="angle">∠2</button><span class="empty-card-note">待发现</span></div>
+              <div class="angle-slot"><button id="angle-card-3" class="pool-card" draggable="true" data-token="∠3" data-type="angle">∠3</button><span class="empty-card-note">待发现</span></div>
+              <div class="angle-slot"><button id="angle-card-4" class="pool-card" draggable="true" data-token="∠4" data-type="angle">∠4</button><span class="empty-card-note">待发现</span></div>
+              <div class="angle-slot"><button id="angle-card-5" class="pool-card" draggable="true" data-token="∠5" data-type="angle">∠5</button><span class="empty-card-note">待发现</span></div>
+            </div>
+          </section>
+
+          <section class="pool-column" aria-label="度数卡">
+            <h3 class="column-title">度数卡</h3>
+            <div class="pool-grid">
+              <button id="degree-card-15" class="pool-card degree-card" draggable="true" data-token="15°" data-type="degree">15°</button>
+              <button class="pool-card degree-card" draggable="true" data-token="30°" data-type="degree">30°</button>
+              <button class="pool-card degree-card" draggable="true" data-token="45°" data-type="degree">45°</button>
+              <button class="pool-card degree-card" draggable="true" data-token="60°" data-type="degree">60°</button>
+              <button class="pool-card degree-card" draggable="true" data-token="75°" data-type="degree">75°</button>
+              <button class="pool-card degree-card" draggable="true" data-token="90°" data-type="degree">90°</button>
+            </div>
+          </section>
+        </div>
+
+        <p id="pool-instruction" class="pool-instruction">拖动卡片到下方框内；卡片不会从卡片池中消失。</p>
+      </aside>
+    </section>
+
+    <section class="equation-section" aria-label="角度等式">
+      <div class="equation-heading">
+        <h2>把卡片拖进等式</h2>
+        <p>空着的角框按 0° 计算；点击“验证等式”。<br>双击已填的框可清空。</p>
+      </div>
+
+      <div class="equation-block">
+        <div class="equation-row" aria-label="三个角相加等于一个度数">
+          <div class="drop-slot" data-accept="angle" data-row="sum" title="拖入角卡；留空按 0° 计算；双击清空"><span class="drop-hint">放角卡</span></div>
+          <span class="operator">＋</span>
+          <div class="drop-slot" data-accept="angle" data-row="sum" title="拖入角卡；留空按 0° 计算；双击清空"><span class="drop-hint">放角卡</span></div>
+          <span class="operator">＋</span>
+          <div class="drop-slot" data-accept="angle" data-row="sum" title="拖入角卡；留空按 0° 计算；双击清空"><span class="drop-hint">放角卡</span></div>
+          <span class="operator">＝</span>
+          <div class="drop-slot degree-target" data-accept="degree angle" data-row="sum" title="拖入角卡或度数卡，双击清空"><span class="drop-hint">放卡片</span></div>
+        </div>
+        <div class="row-action">
+          <button id="verify-sum-button" class="action-button row-verify-button" type="button">验证等式</button>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button id="clear-button" class="action-button secondary-button" type="button">清空等式</button>
+      </div>
+      <p id="validation-note" class="validation-note">先从题干中点击获得角卡，再组成正确的角度关系。</p>
+
+      <div class="condition-box" aria-live="polite">
+        <h3 class="condition-title">已验证的条件</h3>
+        <div id="condition-list" class="condition-list">
+          <span id="condition-empty" class="condition-empty">验证成立的关系会显示在这里。</span>
+        </div>
+      </div>
+
+      <div class="deduction-box" aria-live="polite">
+        <h3 class="deduction-title">观察提示</h3>
+        <div id="deduction-list" class="deduction-list">
+          <span id="deduction-empty" class="deduction-empty">当出现可推出的关键信息时，这里会提示。</span>
+        </div>
+      </div>
+      <p id="solution-success" class="solution-success" role="status" aria-live="polite">解题成功！∠1 ＝ 15°</p>
+    </section>
+  </main>
+
+  <script>
+    const question = document.getElementById('question');
+    const questionParts = [
+      { text: '三个大小相等的正方形如下图摆放，已知' },
+      { text: '∠2=30°', id: 'trigger-2', token: '∠2', label: '获得 ∠2 卡' },
+      { text: '，' },
+      { text: '∠3=45°', id: 'trigger-3', token: '∠3', label: '获得 ∠3 卡' },
+      { text: '，' },
+      { text: '求∠1的度数', id: 'trigger-solve', token: 'solve', label: '获得 ∠1、∠4、∠5 卡' },
+      { text: '。' }
+    ];
+
+    const speed = 34;
+    let partIndex = 0;
+    let charIndex = 0;
+    let currentNode = null;
+    let selectedCard = null;
+    let typingTimer = null;
+    const verifiedConditions = new Set();
+    const helperAngles = document.getElementById('helper-angles');
+    const rightAngleMarkers = document.getElementById('right-angle-markers');
+    const figureHintButton = document.getElementById('figure-hint-button');
+    const figureHintMessage = document.getElementById('figure-hint-message');
+
+    function beginPart() {
+      const part = questionParts[partIndex];
+      currentNode = document.createElement('span');
+      currentNode.className = part.id ? 'typed-segment question-link' : 'typed-segment';
+      if (part.id) {
+        currentNode.id = part.id;
+        currentNode.dataset.token = part.token;
+      }
+      question.appendChild(currentNode);
+    }
+
+    function typeNextCharacter() {
+      if (!currentNode) beginPart();
+      const part = questionParts[partIndex];
+      currentNode.textContent += part.text.charAt(charIndex);
+      charIndex += 1;
+
+      if (charIndex < part.text.length) {
+        typingTimer = setTimeout(typeNextCharacter, speed);
+        return;
+      }
+
+      if (part.id) enableQuestionTrigger(currentNode, part);
+      partIndex += 1;
+      charIndex = 0;
+      currentNode = null;
+      if (partIndex < questionParts.length) {
+        typingTimer = setTimeout(typeNextCharacter, speed + 26);
+      } else {
+        typingTimer = null;
+      }
+    }
+
+    function enableQuestionTrigger(node, part) {
+      node.classList.add('is-ready');
+      node.tabIndex = 0;
+      node.setAttribute('role', 'button');
+      node.setAttribute('aria-label', part.label);
+      node.addEventListener('click', () => handleQuestionTrigger(part.token, node));
+      node.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleQuestionTrigger(part.token, node);
+        }
+      });
+    }
+
+    function revealAngleCard(angleNumber) {
+      const card = document.getElementById(`angle-card-${angleNumber}`);
+      if (!card) return;
+      card.classList.add('is-revealed');
+      updateFigureUnlocks();
+    }
+
+    function updateFigureUnlocks() {
+      const helperVisible = [1, 4, 5].every((num) => document.getElementById(`angle-card-${num}`)?.classList.contains('is-revealed'));
+      helperAngles.classList.toggle('is-visible', helperVisible);
+      helperAngles.setAttribute('aria-hidden', helperVisible ? 'false' : 'true');
+
+      const allAnglesVisible = [1, 2, 3, 4, 5].every((num) => document.getElementById(`angle-card-${num}`)?.classList.contains('is-revealed'));
+      rightAngleMarkers.classList.toggle('is-visible', allAnglesVisible);
+      rightAngleMarkers.setAttribute('aria-hidden', allAnglesVisible ? 'false' : 'true');
+    }
+
+    function handleQuestionTrigger(token, node) {
+      node.classList.add('is-used');
+      if (token === '∠2') {
+        revealAngleCard(2);
+        setPoolInstruction('已获得 ∠2 卡。继续点击题干中的其他红色内容。');
+      } else if (token === '∠3') {
+        revealAngleCard(3);
+        setPoolInstruction('已获得 ∠3 卡。继续点击“求∠1的度数”。');
+      } else {
+        [1, 4, 5].forEach(revealAngleCard);
+        setPoolInstruction('已获得 ∠1、∠4、∠5 卡。现在可以拖入下方等式。');
+      }
+    }
+
+    function setPoolInstruction(message) {
+      document.getElementById('pool-instruction').textContent = message;
+    }
+
+    function visibleCard(card) {
+      return !card.classList.contains('pool-card') || !card.closest('.angle-slot') || card.classList.contains('is-revealed');
+    }
+
+    document.querySelectorAll('.pool-card').forEach((card) => {
+      card.addEventListener('dragstart', (event) => {
+        if (!visibleCard(card)) {
+          event.preventDefault();
+          return;
+        }
+        const payload = JSON.stringify({ token: card.dataset.token, type: card.dataset.type });
+        event.dataTransfer.setData('text/plain', payload);
+        event.dataTransfer.effectAllowed = 'copy';
+        selectedCard = { token: card.dataset.token, type: card.dataset.type, element: card };
+        updateSelectedCard(card);
+      });
+
+      card.addEventListener('click', () => {
+        if (!visibleCard(card)) return;
+        if (selectedCard && selectedCard.element === card) {
+          selectedCard = null;
+          updateSelectedCard(null);
+          return;
+        }
+        selectedCard = { token: card.dataset.token, type: card.dataset.type, element: card };
+        updateSelectedCard(card);
+      });
+    });
+
+    function updateSelectedCard(card) {
+      document.querySelectorAll('.pool-card').forEach((item) => item.classList.toggle('is-selected', item === card));
+    }
+
+    function parseDropPayload(event) {
+      try {
+        return JSON.parse(event.dataTransfer.getData('text/plain'));
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function placeCard(slot, cardData) {
+      if (!cardData || !slot.dataset.accept.split(' ').includes(cardData.type)) {
+        showValidation('这个框需要放入对应类型的卡片。', 'error');
+        return;
+      }
+      slot.dataset.token = cardData.token;
+      slot.dataset.type = cardData.type;
+      slot.classList.add('has-card');
+      slot.classList.toggle('has-angle-card', slot.classList.contains('degree-target') && cardData.type === 'angle');
+      slot.innerHTML = `<span class="placed-token ${cardData.type === 'degree' ? 'degree' : ''}">${cardData.token}</span>`;
+      showValidation('卡片已放入等式。', '');
+    }
+
+    document.querySelectorAll('.drop-slot').forEach((slot) => {
+      slot.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'copy';
+        slot.classList.add('is-dragover');
+      });
+      slot.addEventListener('dragleave', () => slot.classList.remove('is-dragover'));
+      slot.addEventListener('drop', (event) => {
+        event.preventDefault();
+        slot.classList.remove('is-dragover');
+        placeCard(slot, parseDropPayload(event));
+      });
+      slot.addEventListener('click', () => {
+        if (selectedCard) placeCard(slot, selectedCard);
+      });
+      slot.addEventListener('dblclick', () => clearSlot(slot));
+    });
+
+    function clearSlot(slot) {
+      delete slot.dataset.token;
+      delete slot.dataset.type;
+      slot.classList.remove('has-card', 'has-angle-card');
+      const accept = slot.dataset.accept;
+      const text = accept === 'degree' ? '放度数卡' : accept === 'angle' ? '放角卡' : '放卡片';
+      slot.innerHTML = `<span class="drop-hint">${text}</span>`;
+    }
+
+    function getRowSlots(rowName) {
+      return [...document.querySelectorAll(`.drop-slot[data-row="${rowName}"]`)];
+    }
+
+    // 验证内核：每一张角卡、度数卡都对应一个真实的角度数值。
+    // 只比较等号左侧的角度和与右侧度数，不预先写死哪些等式才算成立。
+    const ANGLE_VALUES = Object.freeze({
+      '∠0＝0°': 0,
+      '∠1': 15,
+      '∠2': 30,
+      '∠3': 45,
+      '∠4': 30,
+      '∠5': 45
+    });
+
+    const DEGREE_VALUES = Object.freeze({
+      '15°': 15,
+      '30°': 30,
+      '45°': 45,
+      '60°': 60,
+      '75°': 75,
+      '90°': 90
+    });
+
+    const shownDeductionHints = new Set();
+    const verifiedSumConditions = new Map();
+    // 只有学生亲自把两个角放进等式并验证成功，才会记录为“已验证的相等角”。
+    const manuallyVerifiedAnglePairs = new Set();
+
+    function getTokenValue(token) {
+      if (Object.prototype.hasOwnProperty.call(ANGLE_VALUES, token)) return ANGLE_VALUES[token];
+      if (Object.prototype.hasOwnProperty.call(DEGREE_VALUES, token)) return DEGREE_VALUES[token];
+      return null;
+    }
+
+    function makePairKey(left, right) {
+      return [left, right].sort((a, b) => a.localeCompare(b, 'zh-CN')).join('|');
+    }
+
+    function makeSumKey(angleTokens, degreeToken) {
+      return `${[...angleTokens].sort((a, b) => a.localeCompare(b, 'zh-CN')).join('|')}=${degreeToken}`;
+    }
+
+    // 条件框只展示实际放入的角卡：
+    // 两张角卡只显示一个“＋”，一张角卡不显示“＋”；空角框按 0° 计算但不写进条件。
+    function formatSumRelation(angleTokens, degreeToken) {
+      const visibleAngles = angleTokens.filter((token) => token !== '∠0＝0°');
+      return `${visibleAngles.join(' ＋ ')} ＝ ${degreeToken}`;
+    }
+
+    function addCondition(key, text) {
+      if (verifiedConditions.has(key)) return false;
+      verifiedConditions.add(key);
+      document.getElementById('condition-empty')?.remove();
+      const chip = document.createElement('span');
+      chip.className = 'condition-chip';
+      chip.textContent = text;
+      document.getElementById('condition-list').appendChild(chip);
+      return true;
+    }
+
+    function addDeductionHint(key, text) {
+      if (shownDeductionHints.has(key)) return;
+      shownDeductionHints.add(key);
+      document.getElementById('deduction-empty')?.remove();
+      const hint = document.createElement('span');
+      hint.className = 'deduction-chip';
+      hint.textContent = text;
+      document.getElementById('deduction-list').appendChild(hint);
+    }
+
+    function multisetDifference(fromTokens, removeTokens) {
+      const counts = new Map();
+      removeTokens.forEach((token) => counts.set(token, (counts.get(token) || 0) + 1));
+      const result = [];
+      fromTokens.forEach((token) => {
+        const count = counts.get(token) || 0;
+        if (count > 0) {
+          counts.set(token, count - 1);
+        } else {
+          result.push(token);
+        }
+      });
+      return result;
+    }
+
+    // 任意两条同度数的加法条件：消去共同的角后，若各只剩一个角，
+    // 只在“观察提示”中提醒学生存在相等角；不自动把具体相等关系写进条件框。
+    // 学生需要自行把两个角放入等式，验证后才会得到“∠a＝∠b”这一条件。
+    function updateEqualAngleHints() {
+      const conditions = [...verifiedSumConditions.values()];
+      for (let i = 0; i < conditions.length; i += 1) {
+        for (let j = i + 1; j < conditions.length; j += 1) {
+          const first = conditions[i];
+          const second = conditions[j];
+          if (first.degreeValue !== second.degreeValue) continue;
+
+          const onlyFirst = multisetDifference(first.angleTokens, second.angleTokens);
+          const onlySecond = multisetDifference(second.angleTokens, first.angleTokens);
+          if (onlyFirst.length !== 1 || onlySecond.length !== 1 || onlyFirst[0] === onlySecond[0]) continue;
+
+          const pairKey = makePairKey(onlyFirst[0], onlySecond[0]);
+          addDeductionHint(`equal-angle-${pairKey}`, '有两个角相等');
+        }
+      }
+    }
+
+    function showValidation(message, type) {
+      const note = document.getElementById('validation-note');
+      note.textContent = message;
+      note.className = `validation-note ${type}`.trim();
+    }
+
+    function showSolutionSuccess() {
+      document.getElementById('solution-success').classList.add('is-visible');
+    }
+
+    // 15° 作为可用的度数卡，从一开始就显示在 30° 前面。
+    // 仍保留相等角的学生验证记录，供后续推理扩展使用。
+    function maybeReveal15Degree() {}
+
+    function isAngleToken(token) {
+      return Object.prototype.hasOwnProperty.call(ANGLE_VALUES, token) && token !== '∠0＝0°';
+    }
+
+    function verifySumRow() {
+      const slots = getRowSlots('sum');
+      // 第一行的三个角框都参与计算：未放卡片的角框默认是 0°。
+      // 但条件框与后续推理只保留实际放入的角卡，不把默认的 0° 写出来。
+      const angleTokens = slots.slice(0, 3)
+        .map((slot) => slot.dataset.token || '∠0＝0°');
+      const visibleAngleTokens = angleTokens.filter((token) => token !== '∠0＝0°');
+      const rightToken = slots[3].dataset.token;
+
+      if (!rightToken && angleTokens.every((token) => token === '∠0＝0°')) return { state: 'empty' };
+      if (!rightToken) return { state: 'partial' };
+
+      const angleValues = angleTokens.map(getTokenValue);
+      const rightValue = getTokenValue(rightToken);
+      if (angleValues.some((value) => value === null) || rightValue === null) return { state: 'wrong' };
+
+      const sum = angleValues.reduce((total, value) => total + value, 0);
+      if (sum !== rightValue) return { state: 'wrong' };
+
+      const isDirectAngleEquality = visibleAngleTokens.length === 1
+        && isAngleToken(visibleAngleTokens[0])
+        && isAngleToken(rightToken);
+      const pairKey = isDirectAngleEquality ? makePairKey(visibleAngleTokens[0], rightToken) : null;
+      const conditionKey = isDirectAngleEquality
+        ? `manual-pair:${pairKey}`
+        : `sum:${makeSumKey(visibleAngleTokens, rightToken)}`;
+      const relation = formatSumRelation(visibleAngleTokens, rightToken);
+      const added = addCondition(conditionKey, relation);
+
+      if (isDirectAngleEquality) {
+        // 只有学生亲自填出并验证成功的两个角，才计入 15° 的解锁条件。
+        manuallyVerifiedAnglePairs.add(pairKey);
+        maybeReveal15Degree();
+      } else {
+        verifiedSumConditions.set(conditionKey, {
+          angleTokens: [...visibleAngleTokens],
+          degreeToken: rightToken,
+          degreeValue: rightValue
+        });
+        updateEqualAngleHints();
+      }
+
+      if (visibleAngleTokens.length === 1 && visibleAngleTokens[0] === '∠1' && rightToken === '15°') {
+        showSolutionSuccess();
+      }
+      return { state: 'correct', added };
+    }
+
+    function handleEquationVerification() {
+      const result = verifySumRow();
+      if (result.state === 'correct') {
+        showValidation(
+          result.added
+            ? '等式验证成功：关系已写入下方条件框。'
+            : '该等式已经验证过，条件框中已保留该关系。',
+          'success'
+        );
+        return;
+      }
+      if (result.state === 'partial') {
+        showValidation('角框可以留空（按 0° 计算）；请补上右侧度数卡后再验证。', '');
+        return;
+      }
+      if (result.state === 'wrong') {
+        showValidation('填写的等式不成立，请再观察图形和已知条件。', 'error');
+        return;
+      }
+      showValidation('请先在等式中放入卡片。', '');
+    }
+
+    document.getElementById('verify-sum-button').addEventListener('click', handleEquationVerification);
+
+    document.getElementById('clear-button').addEventListener('click', () => {
+      document.querySelectorAll('.drop-slot').forEach(clearSlot);
+      selectedCard = null;
+      updateSelectedCard(null);
+      showValidation('等式已清空，卡片池中的卡仍可继续使用。', '');
+    });
+
+    figureHintButton.addEventListener('click', () => {
+      figureHintMessage.classList.toggle('is-visible');
+    });
+
+    function resetActivity() {
+      if (typingTimer) {
+        clearTimeout(typingTimer);
+        typingTimer = null;
+      }
+
+      partIndex = 0;
+      charIndex = 0;
+      currentNode = null;
+      question.textContent = '';
+
+      document.querySelectorAll('.question-link').forEach((node) => {
+        node.classList.remove('is-ready', 'is-used');
+      });
+      document.querySelectorAll('.angle-slot .pool-card').forEach((card) => {
+        card.classList.remove('is-revealed', 'is-selected');
+      });
+      document.querySelectorAll('.pool-card').forEach((card) => card.classList.remove('is-selected'));
+      helperAngles.classList.remove('is-visible');
+      helperAngles.setAttribute('aria-hidden', 'true');
+      rightAngleMarkers.classList.remove('is-visible');
+      rightAngleMarkers.setAttribute('aria-hidden', 'true');
+      figureHintMessage.classList.remove('is-visible');
+
+      document.querySelectorAll('.drop-slot').forEach(clearSlot);
+      selectedCard = null;
+      updateSelectedCard(null);
+
+      verifiedConditions.clear();
+      shownDeductionHints.clear();
+      verifiedSumConditions.clear();
+      manuallyVerifiedAnglePairs.clear();
+
+      document.getElementById('condition-list').innerHTML = '<span id="condition-empty" class="condition-empty">验证成立的关系会显示在这里。</span>';
+      document.getElementById('deduction-list').innerHTML = '<span id="deduction-empty" class="deduction-empty">当出现可推出的关键信息时，这里会提示。</span>';
+      document.getElementById('solution-success').classList.remove('is-visible');
+      setPoolInstruction('拖动卡片到下方框内；卡片不会从卡片池中消失。');
+      showValidation('已重置本题，请从题干中的红色内容开始探索。', '');
+
+      typingTimer = setTimeout(typeNextCharacter, 180);
+    }
+
+    document.getElementById('reset-button').addEventListener('click', resetActivity);
+
+    typingTimer = setTimeout(typeNextCharacter, 280);
+  </script>
+</body>
+</html>
