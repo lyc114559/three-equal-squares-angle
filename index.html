@@ -103,14 +103,15 @@
     .typed-segment { white-space: pre-wrap; }
 
     .question-link {
-      display: inline-block;
-      min-width: 1em;
-      padding: 0 2px;
+      display: inline;
+      width: auto;
+      min-width: 0;
+      padding: 0 .04em;
       border-radius: 5px;
       color: var(--accent);
       cursor: default;
       text-decoration: none;
-      transition: color .18s ease, transform .18s ease, background .18s ease;
+      transition: color .18s ease, background .18s ease;
     }
 
     .question-link.is-ready { cursor: pointer; }
@@ -119,7 +120,6 @@
     .question-link.is-ready:focus-visible {
       color: #bd362d;
       background: rgba(255, 236, 233, .7);
-      transform: translateY(-1px);
       outline: none;
     }
 
@@ -165,6 +165,7 @@
       flex-direction: column;
       align-items: flex-end;
       gap: 7px;
+      min-height: 56px;
     }
 
     .figure-heading h2,
@@ -180,6 +181,13 @@
     .pool-tip {
       color: var(--muted);
       font-size: 13px;
+    }
+
+    .figure-tip {
+      display: block;
+      min-height: 19px;
+      line-height: 19px;
+      white-space: nowrap;
     }
 
     .figure-hint-button {
@@ -204,20 +212,6 @@
       background: #edf7fd;
       transform: translateY(-1px);
       outline: none;
-    }
-
-    .figure-hint-message {
-      display: none;
-      max-width: 240px;
-      margin: 0;
-      color: #617789;
-      font-size: 13px;
-      line-height: 1.45;
-      text-align: right;
-    }
-
-    .figure-hint-message.is-visible {
-      display: block;
     }
 
     svg {
@@ -744,7 +738,7 @@
     @media (max-width: 470px) {
       .figure-heading, .pool-heading, .equation-heading { flex-direction: column; gap: 4px; }
       .figure-heading-side { width: 100%; align-items: flex-start; }
-      .figure-hint-message { max-width: none; text-align: left; }
+      .figure-tip { white-space: normal; }
       .title-reset-button { top: 13px; right: 12px; min-width: 64px; min-height: 30px; padding: 0 10px; font-size: 12px; }
       .question { padding-right: 66px; }
       .pool-tip, .equation-heading p { max-width: none; text-align: left; }
@@ -771,9 +765,8 @@
         <div class="figure-heading">
           <h2>图形观察</h2>
           <div class="figure-heading-side">
-            <span class="figure-tip">蓝色线段表示三个大小相等的正方形</span>
+            <span id="figure-tip" class="figure-tip">蓝色线段表示三个大小相等的正方形</span>
             <button id="figure-hint-button" class="figure-hint-button" type="button">提示</button>
-            <p id="figure-hint-message" class="figure-hint-message">仔细观察三个直角的组成，发现隐藏关系</p>
           </div>
         </div>
         <svg viewBox="250 64 680 448" role="img" aria-label="三个大小相等的正方形与角1、角2、角3">
@@ -908,7 +901,10 @@
     const helperAngles = document.getElementById('helper-angles');
     const rightAngleMarkers = document.getElementById('right-angle-markers');
     const figureHintButton = document.getElementById('figure-hint-button');
-    const figureHintMessage = document.getElementById('figure-hint-message');
+    const figureTip = document.getElementById('figure-tip');
+    const defaultFigureTipText = '蓝色线段表示三个大小相等的正方形';
+    const openFigureTipText = '仔细观察三个直角的组成，发现隐藏关系';
+    let figureHintOpen = false;
 
     function beginPart() {
       const part = questionParts[partIndex];
@@ -1278,7 +1274,9 @@
     });
 
     figureHintButton.addEventListener('click', () => {
-      figureHintMessage.classList.toggle('is-visible');
+      figureHintOpen = !figureHintOpen;
+      figureTip.textContent = figureHintOpen ? openFigureTipText : defaultFigureTipText;
+      figureHintButton.textContent = figureHintOpen ? '关闭' : '提示';
     });
 
     function resetActivity() {
@@ -1303,7 +1301,9 @@
       helperAngles.setAttribute('aria-hidden', 'true');
       rightAngleMarkers.classList.remove('is-visible');
       rightAngleMarkers.setAttribute('aria-hidden', 'true');
-      figureHintMessage.classList.remove('is-visible');
+      figureHintOpen = false;
+      figureTip.textContent = defaultFigureTipText;
+      figureHintButton.textContent = '提示';
 
       document.querySelectorAll('.drop-slot').forEach(clearSlot);
       selectedCard = null;
